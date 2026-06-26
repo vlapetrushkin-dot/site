@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ANIMA FORGE — Road Map MVP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#08081a;
+  --bg-1:#13132a;
+  --ink:#f7f5ec;
+  --ink-2:#cfc9b8;
+  --ink-3:#8b8aa8;
+  --gold:#f6c77a;
+  --line:rgba(246,199,122,.18);
+  --line-2:rgba(255,255,255,.06);
+  --w1:#7fc97a;
+  --w2:#e5b15c;
+  --w3:#e07b4a;
+  --w4:#b48ce0;
+  --p-anim1:#a78bfa;
+  --p-anim2:#c4b5fd;
+  --p-script:#60a5fa;
+  --p-model1:#fb923c;
+  --p-model2:#fbbf24;
+  --p-map:#34d399;
+  --p-tex:#f472b6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink);font-family:'Inter',system-ui,sans-serif}
+body{
+  background:
+    radial-gradient(1400px 700px at 80% -5%, rgba(167,139,250,.22), transparent 60%),
+    radial-gradient(1100px 600px at 5% 105%, rgba(246,199,122,.13), transparent 60%),
+    radial-gradient(800px 800px at 50% 50%, rgba(50,50,90,.4), transparent 70%),
+    linear-gradient(180deg, #08081a 0%, #0d0d1f 100%);
+}
+/* Звёзды */
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.9), transparent 50%),
+    radial-gradient(1px 1px at 28% 42%, rgba(255,255,255,.7), transparent 50%),
+    radial-gradient(1px 1px at 47% 12%, rgba(255,255,255,.85), transparent 50%),
+    radial-gradient(1px 1px at 62% 68%, rgba(255,255,255,.6), transparent 50%),
+    radial-gradient(1px 1px at 78% 27%, rgba(246,199,122,.7), transparent 50%),
+    radial-gradient(1px 1px at 89% 55%, rgba(255,255,255,.7), transparent 50%),
+    radial-gradient(1px 1px at 33% 82%, rgba(167,139,250,.8), transparent 50%),
+    radial-gradient(2px 2px at 71% 91%, rgba(255,255,255,.5), transparent 50%),
+    radial-gradient(1px 1px at 6% 70%, rgba(255,255,255,.55), transparent 50%);
+  animation:tw 8s ease-in-out infinite alternate;
+}
+@keyframes tw{from{opacity:.55}to{opacity:1}}
+
+/* HEADER */
+header.top{
+  position:fixed; top:0; left:0; right:0; z-index:10;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 24px;
+  background:linear-gradient(180deg, rgba(8,8,26,.85), rgba(8,8,26,0));
+  backdrop-filter:blur(6px);
+  pointer-events:none;
+}
+header .brand{display:flex; flex-direction:column; gap:2px; pointer-events:auto}
+header .brand .game{font-family:'Cormorant Garamond',serif; font-size:28px; letter-spacing:.05em; color:var(--gold); text-shadow:0 0 22px rgba(246,199,122,.22); line-height:1}
+header .brand .sub{font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--ink-3)}
+header .progress-wrap{display:flex; flex-direction:column; gap:6px; min-width:280px; pointer-events:auto}
+header .progress-label{display:flex; justify-content:space-between; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3)}
+header .progress-label b{color:var(--gold); font-size:13px}
+header .progress-bar{height:6px; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden}
+header .progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--w1),var(--w2),var(--w3),var(--w4)); border-radius:99px; transition:width .6s cubic-bezier(.2,.8,.2,1); box-shadow:0 0 16px rgba(246,199,122,.4)}
+
+/* VIEWPORT — поверхность для зума и пана */
+#viewport{
+  position:fixed; inset:0;
+  overflow:hidden;
+  cursor:grab;
+  z-index:1;
+}
+#viewport.grabbing{cursor:grabbing}
+#world{
+  position:absolute; left:0; top:0;
+  width:2300px; height:1400px;
+  transform-origin:0 0;
+  will-change:transform;
+}
+
+/* Светящийся путь между неделями */
+#connections{
+  position:absolute; left:0; top:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  overflow:visible;
+}
+.path-base{fill:none; stroke:rgba(246,199,122,.18); stroke-width:2}
+.path-glow{fill:none; stroke:var(--gold); stroke-width:2.5; stroke-dasharray:4 12; opacity:.85; filter:drop-shadow(0 0 6px rgba(246,199,122,.6))}
+.path-glow{animation:flow 1.6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-32}}
+
+/* WEEK NODE */
+.week-node{
+  position:absolute;
+  width:320px;
+}
+.card{
+  position:relative; width:320px;
+  background:linear-gradient(180deg, rgba(30,30,55,.92), rgba(18,18,36,.98));
+  border:1px solid var(--line-2);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.03) inset;
+  cursor:grab;
+  transition:transform .25s, border-color .25s, box-shadow .25s;
+}
+.card:hover{
+  border-color:var(--week-color);
+  transform:translateY(-3px);
+  box-shadow:0 30px 70px -22px rgba(0,0,0,.8), 0 0 28px var(--week-color);
+}
+.card:active{cursor:grabbing}
+.week-node.moving{z-index:100}
+.week-node.moving .card{
+  cursor:grabbing;
+  transform:scale(1.04) translateY(-8px) !important;
+  border-color:var(--week-color);
+  box-shadow:0 50px 90px -20px rgba(0,0,0,.9), 0 0 60px var(--week-color);
+  transition:none;
+}
+.card::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:3px;
+  background:var(--week-color); box-shadow:0 0 18px var(--week-color);
+  z-index:3;
+}
+.card .img-zone{
+  position:relative; height:200px;
+  background:rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.card .img-zone img{width:100%; height:100%; object-fit:cover; display:block}
+.card .img-zone .placeholder{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  color:var(--ink-3); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  padding:8px; text-align:center;
+}
+.card .img-zone .placeholder svg{opacity:.5}
+.card .img-zone .placeholder code{
+  color:var(--gold); background:rgba(246,199,122,.08); padding:3px 8px; border-radius:4px;
+  font-size:10px; letter-spacing:.06em; text-transform:none;
+}
+.card .img-zone.drop-on{background:rgba(246,199,122,.12)}
+.card .img-zone .reset-img{
+  position:absolute; top:8px; right:8px;
+  width:26px; height:26px; border-radius:50%;
+  background:rgba(0,0,0,.7); color:#fff; border:none; cursor:pointer;
+  display:none; align-items:center; justify-content:center; font-size:15px;
+}
+.card:hover .img-zone .reset-img{display:flex}
+.card .card-foot{
+  padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  background:linear-gradient(180deg, transparent, rgba(0,0,0,.25));
+}
+.card .num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px; line-height:1; font-weight:700;
+  color:var(--week-color);
+  text-shadow:0 0 22px var(--week-color);
+}
+.card .meta{display:flex; flex-direction:column; gap:2px; flex:1}
+.card .meta b{font-size:14px; letter-spacing:.04em}
+.card .meta span{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3)}
+.card .pct{
+  font-family:'Cormorant Garamond',serif;
+  font-size:24px; color:var(--week-color);
+  background:rgba(255,255,255,.04); border:1px solid var(--line-2);
+  padding:3px 10px; border-radius:8px;
+}
+.card .week-progress{
+  position:absolute; left:14px; right:14px; bottom:6px;
+  height:3px; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden;
+}
+.card .week-progress > div{height:100%; background:var(--week-color); width:0%; transition:width .35s; box-shadow:0 0 8px var(--week-color)}
+.card .open-hint{
+  position:absolute; bottom:8px; right:14px;
+  font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-3);
+  opacity:.7;
+}
+.week-node.expanded .card .open-hint{color:var(--week-color); opacity:1}
+
+/* PLAN PANEL */
+.plan{
+  position:relative;
+  margin-top:18px;
+  width:380px;
+  margin-left:-30px;
+  background:linear-gradient(180deg, rgba(24,24,45,.95), rgba(14,14,28,.98));
+  border:1px solid var(--line-2);
+  border-top:2px solid var(--week-color);
+  border-radius:14px;
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.7), 0 0 30px -10px var(--week-color);
+  max-height:0; overflow:hidden; opacity:0;
+  transition:max-height .45s cubic-bezier(.2,.8,.2,1), opacity .3s, padding .3s;
+  padding:0 18px;
+}
+.week-node.expanded .plan{
+  max-height:4000px; opacity:1; padding:18px;
+}
+.plan::before{
+  content:""; position:absolute; left:50%; top:-10px; transform:translateX(-50%) rotate(45deg);
+  width:14px; height:14px;
+  background:linear-gradient(135deg, var(--week-color), var(--week-color));
+  border-left:1px solid var(--week-color); border-top:1px solid var(--week-color);
+}
+.plan h3{
+  margin:0 0 4px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px; color:var(--week-color); font-weight:700; letter-spacing:.04em;
+}
+.plan .lead{
+  font-size:12.5px; color:var(--ink-2); line-height:1.55;
+  padding-bottom:12px; border-bottom:1px dashed var(--line-2); margin-bottom:14px;
+}
+.role-group{margin-bottom:14px}
+.role-group:last-child{margin-bottom:0}
+.role-head{
+  display:flex; align-items:center; gap:8px;
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-2); margin-bottom:8px;
+}
+.role-head .dot{width:10px; height:10px; border-radius:50%; box-shadow:0 0 8px currentColor}
+.role-head .role-count{
+  margin-left:auto; font-size:10px; color:var(--ink-3);
+  background:rgba(255,255,255,.04); border:1px solid var(--line-2);
+  padding:2px 8px; border-radius:99px; letter-spacing:.08em;
+}
+.task{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:7px 10px; margin-bottom:4px;
+  background:rgba(0,0,0,.18);
+  border:1px solid var(--line-2);
+  border-left:2px solid var(--role-color, var(--week-color));
+  border-radius:8px;
+  cursor:pointer; user-select:none;
+  transition:background .2s, border-color .2s, transform .15s;
+}
+.task:hover{background:rgba(0,0,0,.32)}
+.task .cb{
+  flex-shrink:0;
+  width:16px; height:16px; border-radius:4px;
+  border:1.5px solid var(--ink-3);
+  display:flex; align-items:center; justify-content:center;
+  transition:all .2s;
+  margin-top:1px;
+}
+.task .cb svg{width:11px; height:11px; opacity:0; transition:opacity .2s; color:#0a0a1a}
+.task.done .cb{background:var(--role-color, var(--week-color)); border-color:var(--role-color, var(--week-color))}
+.task.done .cb svg{opacity:1}
+.task .txt{flex:1; font-size:12.5px; line-height:1.45; color:var(--ink)}
+.task.done{opacity:.5}
+.task.done .txt{text-decoration:line-through; text-decoration-color:var(--ink-3)}
+.plan-summary{
+  margin-top:14px; padding-top:12px;
+  border-top:1px dashed var(--line-2);
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-3);
+}
+.plan-summary b{color:var(--week-color); font-size:13px}
+
+/* CONTROLS — низ-право */
+.controls{
+  position:fixed; right:20px; bottom:20px; z-index:20;
+  display:flex; flex-direction:column; gap:8px; align-items:flex-end;
+}
+.zoom-display{
+  background:rgba(20,20,40,.85); backdrop-filter:blur(8px);
+  border:1px solid var(--line-2); border-radius:10px;
+  padding:8px 12px;
+  font-size:12px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-2);
+}
+.zoom-display b{color:var(--gold); font-family:'Cormorant Garamond',serif; font-size:16px; margin-left:4px}
+.btn-row{display:flex; gap:6px; background:rgba(20,20,40,.85); backdrop-filter:blur(8px); border:1px solid var(--line-2); border-radius:99px; padding:4px}
+.btn-row button{
+  width:36px; height:36px;
+  background:transparent; color:var(--ink-2);
+  border:none; border-radius:99px;
+  font-size:18px; cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; justify-content:center;
+}
+.btn-row button:hover{background:rgba(246,199,122,.12); color:var(--gold)}
+.btn-row button svg{width:18px; height:18px}
+.btn-text{
+  background:rgba(20,20,40,.85); backdrop-filter:blur(8px);
+  color:var(--ink-2); border:1px solid var(--line-2);
+  padding:8px 14px; border-radius:99px;
+  font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  cursor:pointer; transition:all .2s;
+}
+.btn-text:hover{color:var(--ink); border-color:rgba(246,199,122,.4)}
+
+/* TEAM PANEL — низ-лево */
+.team-panel{
+  position:fixed; left:20px; bottom:20px; z-index:20;
+  background:rgba(20,20,40,.85); backdrop-filter:blur(8px);
+  border:1px solid var(--line-2); border-radius:14px;
+  padding:14px 16px;
+  max-width:320px;
+}
+.team-panel h4{
+  margin:0 0 10px; font-size:10.5px; letter-spacing:.28em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500;
+}
+.team-list{display:flex; flex-direction:column; gap:6px}
+.team-list .row{
+  display:flex; align-items:center; gap:9px;
+  font-size:11.5px; color:var(--ink-2);
+}
+.team-list .row .dot{width:11px; height:11px; border-radius:50%; box-shadow:0 0 8px currentColor; flex-shrink:0}
+.team-list .row .role-text{font-size:10px; color:var(--ink-3); margin-left:auto; letter-spacing:.06em}
+
+/* HINT */
+.hint{
+  position:fixed; left:20px; top:78px; z-index:10;
+  font-size:11px; letter-spacing:.06em; color:var(--ink-3);
+  max-width:280px; line-height:1.6;
+  background:rgba(20,20,40,.6); backdrop-filter:blur(6px);
+  border:1px solid var(--line-2); border-radius:10px;
+  padding:10px 14px;
+  transition:opacity .3s;
+}
+.hint b{color:var(--gold); letter-spacing:.16em; text-transform:uppercase; font-size:10px; display:block; margin-bottom:4px}
+.hint.hidden{opacity:0; pointer-events:none}
+
+/* per-week colors */
+.week-node[data-w="1"]{--week-color:var(--w1)}
+.week-node[data-w="2"]{--week-color:var(--w2)}
+.week-node[data-w="3"]{--week-color:var(--w3)}
+.week-node[data-w="4"]{--week-color:var(--w4)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="game">ANIMA FORGE</div>
+    <div class="sub">Road Map · MVP за 4 недели</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Всего готово</span>
+      <span><b id="pctTotal">0%</b> · <span id="doneCount">0 / 0</span></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+  </div>
+</header>
+
+<div class="hint" id="hint">
+  <b>Управление</b>
+  <span>• Тащи пустое место — двигай сцену<br>
+  • Тащи карточку — переставляй неделю<br>
+  • Колесо мыши — зум<br>
+  • Клик по картинке — план недели<br>
+  • Чекбокс — отметка задачи</span>
+</div>
+
+<div id="viewport">
+  <div id="world">
+    <svg id="connections"></svg>
+    <!-- week-node элементы будут добавлены скриптом -->
+  </div>
+</div>
+
+<div class="controls">
+  <div class="zoom-display">Zoom <b id="zoomVal">100%</b></div>
+  <div class="btn-row">
+    <button id="zIn" title="Увеличить">+</button>
+    <button id="zOut" title="Уменьшить">−</button>
+    <button id="zFit" title="Вписать">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V3h4M21 7V3h-4M3 17v4h4M21 17v4h-4"/></svg>
+    </button>
+    <button id="zReset" title="100%">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+    </button>
+  </div>
+  <button class="btn-text" id="resetAll">Сбросить прогресс</button>
+</div>
+
+<div class="team-panel">
+  <h4>Команда — 7 человек</h4>
+  <div class="team-list" id="teamList"></div>
+</div>
+
+<script>
+// ============ ДАННЫЕ ============
+const TEAM = {
+  anim1:  {name:"Аниматор 1",       role:"анимации",            color:"#a78bfa"},
+  anim2:  {name:"Аниматор 2",       role:"анимации",            color:"#c4b5fd"},
+  script: {name:"Скриптер",         role:"Lua / Roblox API",    color:"#60a5fa"},
+  model1: {name:"Модельер 1",       role:"3D-модели",           color:"#fb923c"},
+  model2: {name:"Модельер 2",       role:"модели + текст. + карты", color:"#fbbf24"},
+  map:    {name:"Map-дизайнер",     role:"локации",             color:"#34d399"},
+  tex:    {name:"Texture-дизайнер", role:"материалы / UI",      color:"#f472b6"},
+};
+const ROLE_ORDER = ["script","model1","model2","map","tex","anim1","anim2"];
+
+const WEEKS = [
+  {
+    w:1, name:"Фундамент", caption:"Остров и первый биом", pct:25, color:"#7fc97a",
+    img:"images/w1.jpg",
+    lead:"Закладываем базу: остров с Великим Древом, стартовый биом Шепчущие Луга, первый Анимок Фокси и R6-персонаж игрока. У Древа 5–6 стадий роста — в Н1 закрываем стадии 1 (модельер 1, простая саженца) и 2 (модельер 2, более сложная крона). Фокси и префабы чанков острова S/M/L — у модельера 2 как сложные иконические модели.",
+    tasks:[
+      // Map — биом и остров целиком на нём
+      {t:"Терраформ стартового чанка острова (платформа + спавн)",     a:["map"]},
+      {t:"Биом Шепчущие Луга — базовая геометрия и рельеф",            a:["map"]},
+      {t:"Планировка зон спавна и ресурсных точек на Лугах",           a:["map"]},
+      // Model 1 — Древо и Фокси
+      {t:"Великое Древо — стадия 1 (саженец, 2 веточки)",              a:["model1"]},
+      {t:"Карамельные деревья и кусты Лугов (3+2 варианта)",           a:["model1"]},
+      {t:"Стартовый декор центрального чанка (валуны, грибки, ягоды)", a:["model1"]},
+      // Model 2 — сложные иконические модели + остров + риги
+      {t:"Великое Древо — стадия 2 (молодое деревце, крона)",          a:["model2"]},
+      {t:"Префабы чанков острова — размерная сетка S/M/L под апгрейд", a:["model2"]},
+      {t:"Модель и риг Фокси (огненный лисёнок)",                      a:["model2"]},
+      // Texture
+      {t:"Текстуры коры и листвы Древа (стадии 1–2)",                  a:["tex"]},
+      {t:"Текстуры травы, почвы и листвы Лугов",                       a:["tex"]},
+      {t:"Текстуры Фокси (огонь + светящиеся руны)",                   a:["tex"]},
+      // Anim 1
+      {t:"Анимации Фокси: Idle, Walk, Jump",                           a:["anim1"]},
+      {t:"Колыхание листвы Древа и кустов (ambient idle)",             a:["anim1"]},
+      // Anim 2
+      {t:"Анимации игрока: Idle, Walk, Run, Jump",                     a:["anim2"]},
+      {t:"Анимации падения и приземления игрока",                       a:["anim2"]},
+      // Script
+      {t:"UI выбора биома в корнях Древа",                              a:["script"]},
+      {t:"TeleportService + Loading screen между Places",              a:["script"]},
+      {t:"Базовый сейв-лоад положения игрока у Древа",                 a:["script"]},
+    ],
+  },
+  {
+    w:2, name:"Ядро механик", caption:"Ловля и охота", pct:50, color:"#e5b15c",
+    img:"images/w2.jpg",
+    lead:"Запускаем главное активное действие — ловлю через мини-игру баланса. Map-дизайнер доводит Луга до играбельного состояния (ресурсные точки, освещение). Модельер 1 — простые модели: посох, Зайчик, кормушка. Модельер 2 берёт сложное: риг Бобра, древние механизмы и размерные ресурсные жилы.",
+    tasks:[
+      // Map — биом доводится до состояния «играбельно»
+      {t:"Ресурсные точки и спавн-зоны Лугов (камень, древесина, травы)",a:["map"]},
+      {t:"Освещение и атмосфера Лугов (Lighting, particles, ambient)",   a:["map"]},
+      // Model 1 — простые модели и Зайчик
+      {t:"Модель деревянного посоха",                                    a:["model1"]},
+      {t:"Модель и риг Карамельного Зайчика",                            a:["model1"]},
+      {t:"Модель кормушки для Анимков (раннее здание острова)",          a:["model1"]},
+      // Model 2 — сложные риги и заделы под апгрейд
+      {t:"Модель и риг Лугового Бобра",                                  a:["model2"]},
+      {t:"Префабы древних механизмов (3 варианта для контента чанков)",  a:["model2"]},
+      {t:"Размерные варианты ресурсных жил (S/M/L: камень, руда)",       a:["model2"]},
+      // Texture
+      {t:"UI круговой шкалы и бегунка ловли",                            a:["tex"]},
+      {t:"Текстуры посоха + шейдер свечения и перегрева",                a:["tex"]},
+      {t:"Текстуры Зайчика и Бобра",                                      a:["tex"]},
+      // Anim 1
+      {t:"Анимация испуга и реакций Анимка при ловле",                   a:["anim1"]},
+      {t:"Анимации поведения в дикой природе (пастьба, бег от игрока)",  a:["anim1"]},
+      {t:"Анимации Зайчика (Idle / Walk)",                               a:["anim1"]},
+      // Anim 2
+      {t:"Анимация замаха и магического луча посоха",                    a:["anim2"]},
+      {t:"Анимации Бобра (Idle / Walk)",                                 a:["anim2"]},
+      // Script
+      {t:"Скрипт баланса ловли (бегунок, рывки, прогресс)",              a:["script"]},
+      {t:"Спавн Анимков по точкам (индивидуальный пул на игрока)",       a:["script"]},
+      {t:"Behaviour Tree блуждания и реакции на игрока",                 a:["script"]},
+    ],
+  },
+  {
+    w:3, name:"Цикл", caption:"Фабрика и апгрейд острова", pct:75, color:"#e07b4a",
+    img:"images/w3.jpg",
+    lead:"Замыкаем игровой цикл: ловишь → ставишь на работу → получаешь ресурс → расширяешь остров. Модельер 2 делает иконические здания фабрики (печь, лесопилка, Стол Скрещивания) — это лицо недели. Модельер 1 закрывает простой склад и размерные варианты чанков и декора (повторяющаяся работа по апгрейд-сетке). Map-дизайнер раскладывает префабы и оформляет стадии острова.",
+    tasks:[
+      // Map — конфиг острова и стадии апгрейда
+      {t:"Префабы содержимого чанков: жилы, чистая земля, ржавый механизм",a:["map"]},
+      {t:"Точки крепления зданий на чанках (слоты и привязки)",            a:["map"]},
+      {t:"Визуал острова на разных стадиях апгрейда (планировка колец)",   a:["map"]},
+      // Model 1 — простые здания и повторяющиеся размерные варианты
+      {t:"Модель базового склада ресурсов",                                a:["model1"]},
+      {t:"Размерные варианты чанков (визуал апгрейда S→M→L)",              a:["model1"]},
+      {t:"Размерные варианты декора (валуны, грибы, цветы S/M/L)",         a:["model1"]},
+      // Model 2 — иконические здания фабрики
+      {t:"Модель печи (раздувание / плавка)",                              a:["model2"]},
+      {t:"Модель лесопилки (с крутящейся пилой)",                          a:["model2"]},
+      {t:"Модель Стола Скрещивания (ранний набросок здания)",              a:["model2"]},
+      // Texture
+      {t:"Эффекты огня, дыма, glowing металла печи",                       a:["tex"]},
+      {t:"Текстуры лесопилки + particles опилок",                          a:["tex"]},
+      {t:"UI инвентаря Анимков (профессия, стихия, трейты)",               a:["tex"]},
+      {t:"UI магазина чанков (карта-схема острова)",                       a:["tex"]},
+      // Anim 1
+      {t:"Анимация Раздувания Фокси у печи",                               a:["anim1"]},
+      {t:"Общий слой «работает» (концентрация, подскоки)",                 a:["anim1"]},
+      {t:"Эмоции Анимков: радость, злость, искры из ушек",                 a:["anim1"]},
+      // Anim 2
+      {t:"Анимация Вырубки Бобра на лесопилке",                            a:["anim2"]},
+      {t:"Общий слой «устал» (садится, идёт к кормушке)",                  a:["anim2"]},
+      // Script
+      {t:"Скрипт производства печи (таймер, расход, выход)",               a:["script"]},
+      {t:"Скрипт производства досок (общий API со зданиями)",              a:["script"]},
+      {t:"Drag-and-drop назначения Анимка + серверный цикл работы",        a:["script"]},
+      {t:"Скрипт покупки чанка + случайное содержимое (таблица шансов)",   a:["script"]},
+    ],
+  },
+  {
+    w:4, name:"Финал MVP", caption:"Полировка и онбординг", pct:100, color:"#b48ce0",
+    img:"images/w4.jpg",
+    lead:"Закрываем оффлайн-производство (главный ретеншн), туториал на первые 5 минут, финальная полировка биома и анимаций, заглушка магазина и playtest. Модельер 2 берёт сложное: финальная полировка моделей, портал-телепорт и здания в фазах апгрейда (S/M/L). Модельер 1 — простой финальный декор, стыки чанков и 3D-иконки для UI.",
+    tasks:[
+      // Map
+      {t:"Финальное освещение и колор-коррекция Лугов и острова",        a:["map"]},
+      {t:"Атмосферные детали: пыльца, лучи через листву, бабочки",       a:["map"]},
+      {t:"Точки спавна и расположения NPC-гида туториала",               a:["map"]},
+      // Model 1 — простой финальный декор и иконки
+      {t:"3D-иконки Анимков и ресурсов для UI и поп-апа накопления",     a:["model1"]},
+      {t:"Модели стыков между чанками (бесшовное расширение острова)",   a:["model1"]},
+      {t:"Декоративные мини-объекты (камни, грибы, цветы — финал)",      a:["model1"]},
+      // Model 2 — финальная полировка и сложные модели апгрейда
+      {t:"Полировка моделей всех Анимков и Древа (ретопо, шейдинг)",     a:["model2"]},
+      {t:"Модель портала-телепорта (визуал входа в биом)",               a:["model2"]},
+      {t:"Префабы зданий с фазами апгрейда (S/M/L: печь и лесопилка)",   a:["model2"]},
+      // Texture
+      {t:"UI магазина (карточки геймпассов, заглушки)",                  a:["tex"]},
+      {t:"UI стрелок и пузырей-подсказок туториала",                     a:["tex"]},
+      {t:"Проход по всем материалам, согласование палитры",              a:["tex"]},
+      // Anim 1
+      {t:"Blend-переходы между всеми состояниями Анимков",               a:["anim1"]},
+      {t:"Спец-эффекты движений (шлейфы, пыль, свечение)",               a:["anim1"]},
+      // Anim 2
+      {t:"Анимация NPC-гида (помощник на первой сессии)",                a:["anim2"]},
+      {t:"Реакции Анимков на игрока (подбегают, радуются)",              a:["anim2"]},
+      // Script
+      {t:"DataStore: сохранение фабрики и времени выхода",               a:["script"]},
+      {t:"Симуляция оффлайн-производства (лимит 8 часов)",               a:["script"]},
+      {t:"Поп-ап накопленных ресурсов на входе в игру",                  a:["script"]},
+      {t:"Скрипт туториала (триггеры, подсветка, скип)",                 a:["script"]},
+      {t:"MarketplaceService (проверки владения) + Playtest 5 игроков",  a:["script"]},
+    ],
+  },
+];
+
+// Позиции узлов на полотне — горизонтальная «волна»
+const POS = [
+  {x: 80,   y: 220},
+  {x: 620,  y: 320},
+  {x: 1160, y: 220},
+  {x: 1700, y: 320},
+];
+
+// ============ КОМАНДА ============
+const teamList = document.getElementById('teamList');
+ROLE_ORDER.forEach(id=>{
+  const m = TEAM[id];
+  const row = document.createElement('div');
+  row.className='row';
+  row.innerHTML = `<span class="dot" style="color:${m.color}; background:${m.color}"></span>
+    <span>${m.name}</span><span class="role-text">${m.role}</span>`;
+  teamList.appendChild(row);
+});
+
+// ============ РЕНДЕР УЗЛОВ ============
+const world = document.getElementById('world');
+let activeDrag = null;
+
+WEEKS.forEach((wk, i)=>{
+  const node = document.createElement('div');
+  node.className = 'week-node';
+  node.dataset.w = wk.w;
+  node.style.left = POS[i].x + 'px';
+  node.style.top  = POS[i].y + 'px';
+  node.style.setProperty('--week-color', wk.color);
+
+  // карточка
+  const card = document.createElement('div');
+  card.className = 'card';
+  const hasImg = !!wk.img;
+  card.innerHTML = `
+    <div class="img-zone" data-img="w${wk.w}" data-default="${wk.img || ''}">
+      ${hasImg ? `<img src="${wk.img}" alt="Неделя ${wk.w}">` : ''}
+      <div class="placeholder"${hasImg ? ' style="display:none"' : ''}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <div>Перетащи картинку</div>
+        <code>w${wk.w}.jpg</code>
+      </div>
+      <button class="reset-img" title="Вернуть исходную">↺</button>
+    </div>
+    <div class="card-foot">
+      <div class="num">${wk.w}</div>
+      <div class="meta"><b>Неделя ${wk.w} · ${wk.name}</b><span>${wk.caption}</span></div>
+      <div class="pct">${wk.pct}%</div>
+    </div>
+    <div class="week-progress"><div></div></div>
+    <div class="open-hint">клик ↓</div>
+  `;
+  node.appendChild(card);
+
+  // план снизу
+  const plan = document.createElement('div');
+  plan.className = 'plan';
+
+  // группируем задачи по роли
+  const byRole = {};
+  wk.tasks.forEach((task, ti)=>{
+    task._id = `w${wk.w}-t${ti}`;
+    task.a.forEach(r=>{
+      (byRole[r] = byRole[r] || []).push(task);
+    });
+  });
+
+  let groupsHTML = '';
+  ROLE_ORDER.forEach(r=>{
+    if(!byRole[r]) return;
+    const m = TEAM[r];
+    groupsHTML += `
+      <div class="role-group" style="--role-color:${m.color}">
+        <div class="role-head">
+          <span class="dot" style="color:${m.color}; background:${m.color}"></span>
+          <span>${m.name}</span>
+          <span class="role-count">${byRole[r].length}</span>
+        </div>
+        ${byRole[r].map(t=>`
+          <div class="task" data-id="${t._id}">
+            <div class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="m5 12 5 5L20 7"/></svg></div>
+            <div class="txt">${t.t}</div>
+          </div>`).join('')}
+      </div>`;
+  });
+
+  plan.innerHTML = `
+    <h3>План на неделю · ${wk.pct}% игры</h3>
+    <div class="lead">${wk.lead}</div>
+    ${groupsHTML}
+    <div class="plan-summary">
+      <span>Готово в неделе</span>
+      <span><b class="wk-done">0</b> / ${wk.tasks.length}</span>
+    </div>
+  `;
+  node.appendChild(plan);
+  world.appendChild(node);
+
+  const imgZone = card.querySelector('.img-zone');
+
+  // mousedown на карточку — потенциальный drag; если не двигали = клик = раскрытие
+  card.addEventListener('mousedown', e=>{
+    if(e.target.classList.contains('reset-img')) return;
+    if(e.button !== 0) return;
+    activeDrag = {
+      card, node,
+      startSX:e.clientX, startSY:e.clientY,
+      origX:parseFloat(node.style.left),
+      origY:parseFloat(node.style.top),
+      moved:false
+    };
+    e.stopPropagation();
+  });
+  card.addEventListener('touchstart', e=>{
+    if(e.target.classList.contains('reset-img')) return;
+    if(e.touches.length !== 1) return;
+    const t = e.touches[0];
+    activeDrag = {
+      card, node,
+      startSX:t.clientX, startSY:t.clientY,
+      origX:parseFloat(node.style.left),
+      origY:parseFloat(node.style.top),
+      moved:false, touch:true
+    };
+    e.stopPropagation();
+  }, {passive:true});
+
+  // image drop
+  imgZone.addEventListener('dragover', e=>{e.preventDefault(); e.stopPropagation(); imgZone.classList.add('drop-on')});
+  imgZone.addEventListener('dragleave', e=>{e.stopPropagation(); imgZone.classList.remove('drop-on')});
+  imgZone.addEventListener('drop', e=>{
+    e.preventDefault(); e.stopPropagation();
+    imgZone.classList.remove('drop-on');
+    const f = e.dataTransfer.files[0];
+    if(f && f.type.startsWith('image/')) loadImg(imgZone, f);
+  });
+  imgZone.addEventListener('contextmenu', e=>{
+    e.preventDefault();
+    const inp = document.createElement('input');
+    inp.type='file'; inp.accept='image/*';
+    inp.onchange = ev => { const f = ev.target.files[0]; if(f) loadImg(imgZone, f); };
+    inp.click();
+  });
+  imgZone.querySelector('.reset-img').addEventListener('click', e=>{
+    e.stopPropagation();
+    const def = imgZone.dataset.default;
+    setImg(imgZone, def || null);
+    saveState();
+  });
+
+  // чекбоксы задач
+  plan.querySelectorAll('.task').forEach(taskEl=>{
+    taskEl.addEventListener('click', e=>{
+      e.stopPropagation();
+      const id = taskEl.dataset.id;
+      // все task-элементы с этим id могут существовать в нескольких группах (если есть мульти-роль), синхронизируем
+      document.querySelectorAll(`.task[data-id="${id}"]`).forEach(el=>el.classList.toggle('done'));
+      updateProgress();
+      saveState();
+    });
+  });
+});
+
+function loadImg(box, file){
+  const r = new FileReader();
+  r.onload = ev => { setImg(box, ev.target.result); saveState(); };
+  r.readAsDataURL(file);
+}
+function setImg(box, dataUrl){
+  const existing = box.querySelector('img');
+  if(existing) existing.remove();
+  const ph = box.querySelector('.placeholder');
+  if(dataUrl){
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    box.insertBefore(img, box.firstChild);
+    ph.style.display='none';
+  } else {
+    ph.style.display='';
+  }
+}
+
+// ============ ПЕРЕТАСКИВАНИЕ КАРТОЧЕК ============
+window.addEventListener('mousemove', e=>{
+  if(!activeDrag || activeDrag.touch) return;
+  const dx = e.clientX - activeDrag.startSX;
+  const dy = e.clientY - activeDrag.startSY;
+  if(!activeDrag.moved && Math.hypot(dx,dy) > 4){
+    activeDrag.moved = true;
+    activeDrag.node.classList.add('moving');
+  }
+  if(activeDrag.moved){
+    activeDrag.node.style.left = (activeDrag.origX + dx/state.scale) + 'px';
+    activeDrag.node.style.top  = (activeDrag.origY + dy/state.scale) + 'px';
+    drawConnections();
+  }
+});
+window.addEventListener('mouseup', ()=>{
+  if(!activeDrag || activeDrag.touch) return;
+  if(!activeDrag.moved){
+    activeDrag.node.classList.toggle('expanded');
+  }
+  activeDrag.node.classList.remove('moving');
+  saveState();
+  activeDrag = null;
+});
+window.addEventListener('touchmove', e=>{
+  if(!activeDrag || !activeDrag.touch || e.touches.length !== 1) return;
+  const t = e.touches[0];
+  const dx = t.clientX - activeDrag.startSX;
+  const dy = t.clientY - activeDrag.startSY;
+  if(!activeDrag.moved && Math.hypot(dx,dy) > 4){
+    activeDrag.moved = true;
+    activeDrag.node.classList.add('moving');
+  }
+  if(activeDrag.moved){
+    activeDrag.node.style.left = (activeDrag.origX + dx/state.scale) + 'px';
+    activeDrag.node.style.top  = (activeDrag.origY + dy/state.scale) + 'px';
+    drawConnections();
+    e.preventDefault();
+  }
+}, {passive:false});
+window.addEventListener('touchend', ()=>{
+  if(!activeDrag || !activeDrag.touch) return;
+  if(!activeDrag.moved){
+    activeDrag.node.classList.toggle('expanded');
+  }
+  activeDrag.node.classList.remove('moving');
+  saveState();
+  activeDrag = null;
+});
+
+// ============ ЛИНИИ-СВЯЗИ ============
+const svg = document.getElementById('connections');
+function drawConnections(){
+  svg.setAttribute('viewBox', '0 0 2300 1400');
+  svg.setAttribute('width', '2300');
+  svg.setAttribute('height', '1400');
+
+  const nodes = [...document.querySelectorAll('.week-node')];
+  const points = nodes.map(n => {
+    const cardEl = n.querySelector('.card');
+    const cx = parseFloat(n.style.left);
+    const cy = parseFloat(n.style.top);
+    const w = cardEl.offsetWidth || 320;
+    const h = cardEl.offsetHeight || 290;
+    return {x: cx + w/2, y: cy + h/2, left: cx, right: cx+w, top: cy, bottom: cy+h};
+  });
+
+  let baseD = '', glowD = '';
+  for(let i=0; i<points.length-1; i++){
+    const a = points[i], b = points[i+1];
+    const sx = a.right - 6;
+    const sy = a.y;
+    const ex = b.left + 6;
+    const ey = b.y;
+    const cp1x = sx + (ex-sx)*0.5;
+    const cp1y = sy;
+    const cp2x = ex - (ex-sx)*0.5;
+    const cp2y = ey;
+    const seg = `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${ex} ${ey} `;
+    baseD += seg;
+    glowD += seg;
+  }
+
+  // делаем пути
+  svg.innerHTML = `
+    <path class="path-base" d="${baseD}"/>
+    <path class="path-glow" d="${glowD}"/>
+  `;
+
+  // маленькие узловые свечения
+  points.forEach(p=>{
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', p.x); c.setAttribute('cy', p.y);
+    c.setAttribute('r', 0);
+    svg.appendChild(c);
+  });
+}
+drawConnections();
+
+// перерисовываем линии когда раскрываются панели (размер не меняется — карточка остаётся, план открывается вниз, что не влияет на center). На случай — обсервер:
+new ResizeObserver(()=>drawConnections()).observe(world);
+
+// ============ PAN & ZOOM ============
+const viewport = document.getElementById('viewport');
+const zoomVal = document.getElementById('zoomVal');
+
+const state = { x: 0, y: 0, scale: 1 };
+const minScale = 0.25, maxScale = 2.5;
+
+function apply(){
+  world.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+  zoomVal.textContent = Math.round(state.scale*100) + '%';
+}
+
+function fit(){
+  // вписываем весь world в viewport
+  const vw = viewport.clientWidth, vh = viewport.clientHeight;
+  const ww = 2100, wh = 700; // фактическое содержимое (узлы + планы примерно)
+  const sx = (vw - 80) / ww;
+  const sy = (vh - 200) / wh;
+  state.scale = Math.min(sx, sy, 1);
+  state.x = (vw - ww*state.scale)/2 - 80*state.scale;
+  state.y = 120;
+  apply();
+}
+fit();
+
+// панорама
+let panning = false, lastX=0, lastY=0;
+viewport.addEventListener('mousedown', e=>{
+  if(e.target.closest('.card, .plan, button, .controls, .team-panel, .hint, header')) return;
+  panning = true; lastX = e.clientX; lastY = e.clientY;
+  viewport.classList.add('grabbing');
+  hideHint();
+});
+window.addEventListener('mousemove', e=>{
+  if(!panning) return;
+  state.x += e.clientX - lastX;
+  state.y += e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  apply();
+});
+window.addEventListener('mouseup', ()=>{ panning = false; viewport.classList.remove('grabbing'); });
+
+// зум колесом
+viewport.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const delta = -e.deltaY * 0.0015;
+  const newScale = Math.max(minScale, Math.min(maxScale, state.scale * (1 + delta)));
+  // зум к курсору
+  state.x = mx - (mx - state.x) * (newScale / state.scale);
+  state.y = my - (my - state.y) * (newScale / state.scale);
+  state.scale = newScale;
+  apply();
+  hideHint();
+}, {passive:false});
+
+// тач — pinch
+let pinch = null;
+viewport.addEventListener('touchstart', e=>{
+  if(e.touches.length === 1){
+    panning = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+  } else if(e.touches.length === 2){
+    panning = false;
+    const t = e.touches;
+    const dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    pinch = { dist: Math.hypot(dx, dy), scale: state.scale,
+              cx: (t[0].clientX + t[1].clientX)/2, cy: (t[0].clientY + t[1].clientY)/2 };
+  }
+}, {passive:false});
+viewport.addEventListener('touchmove', e=>{
+  if(e.touches.length === 1 && panning){
+    state.x += e.touches[0].clientX - lastX;
+    state.y += e.touches[0].clientY - lastY;
+    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    apply();
+    e.preventDefault();
+  } else if(e.touches.length === 2 && pinch){
+    const t = e.touches;
+    const dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    const d = Math.hypot(dx, dy);
+    const newScale = Math.max(minScale, Math.min(maxScale, pinch.scale * (d / pinch.dist)));
+    const rect = viewport.getBoundingClientRect();
+    const mx = pinch.cx - rect.left;
+    const my = pinch.cy - rect.top;
+    state.x = mx - (mx - state.x) * (newScale / state.scale);
+    state.y = my - (my - state.y) * (newScale / state.scale);
+    state.scale = newScale;
+    apply();
+    e.preventDefault();
+  }
+}, {passive:false});
+viewport.addEventListener('touchend', e=>{
+  if(e.touches.length === 0){ panning = false; pinch = null; }
+});
+
+// кнопки
+function zoomBy(factor){
+  const rect = viewport.getBoundingClientRect();
+  const mx = rect.width/2, my = rect.height/2;
+  const newScale = Math.max(minScale, Math.min(maxScale, state.scale * factor));
+  state.x = mx - (mx - state.x) * (newScale / state.scale);
+  state.y = my - (my - state.y) * (newScale / state.scale);
+  state.scale = newScale;
+  apply();
+}
+document.getElementById('zIn').onclick  = ()=>zoomBy(1.2);
+document.getElementById('zOut').onclick = ()=>zoomBy(1/1.2);
+document.getElementById('zFit').onclick = fit;
+document.getElementById('zReset').onclick = ()=>{ state.x=0; state.y=80; state.scale=1; apply(); };
+
+// ============ ПРОГРЕСС ============
+function updateProgress(){
+  let totalDone = 0, totalAll = 0;
+  WEEKS.forEach(wk=>{
+    const ids = new Set(wk.tasks.map((_,i)=>`w${wk.w}-t${i}`));
+    let done = 0;
+    ids.forEach(id=>{
+      const sample = document.querySelector(`.task[data-id="${id}"]`);
+      if(sample && sample.classList.contains('done')) done++;
+    });
+    const all = ids.size;
+    totalDone += done; totalAll += all;
+    const node = document.querySelector(`.week-node[data-w="${wk.w}"]`);
+    if(node){
+      const bar = node.querySelector('.week-progress > div');
+      const lbl = node.querySelector('.plan-summary .wk-done');
+      bar.style.width = (done/all*100) + '%';
+      if(lbl) lbl.textContent = done;
+    }
+  });
+  document.getElementById('fill').style.width = totalAll ? (totalDone/totalAll*100)+'%' : '0%';
+  document.getElementById('pctTotal').textContent = totalAll ? Math.round(totalDone/totalAll*100)+'%' : '0%';
+  document.getElementById('doneCount').textContent = `${totalDone} / ${totalAll}`;
+}
+updateProgress();
+
+// ============ HINT ============
+function hideHint(){ document.getElementById('hint').classList.add('hidden'); }
+setTimeout(hideHint, 8000);
+
+// ============ STATE ============
+const KEY = 'animaforge_roadmap_v7';
+function saveState(){
+  const st = { done:[], expanded:[], imgs:{}, view:{x:state.x, y:state.y, s:state.scale}, positions:{} };
+  document.querySelectorAll('.task.done').forEach(t=>{
+    if(!st.done.includes(t.dataset.id)) st.done.push(t.dataset.id);
+  });
+  document.querySelectorAll('.week-node.expanded').forEach(n=>st.expanded.push(n.dataset.w));
+  document.querySelectorAll('.img-zone').forEach(z=>{
+    const img = z.querySelector('img');
+    if(img) st.imgs[z.dataset.img] = img.src;
+  });
+  document.querySelectorAll('.week-node').forEach(n=>{
+    st.positions[n.dataset.w] = { x: parseFloat(n.style.left), y: parseFloat(n.style.top) };
+  });
+  try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return;
+    const st = JSON.parse(raw);
+    (st.done||[]).forEach(id=>{
+      document.querySelectorAll(`.task[data-id="${id}"]`).forEach(t=>t.classList.add('done'));
+    });
+    (st.expanded||[]).forEach(w=>{
+      const n = document.querySelector(`.week-node[data-w="${w}"]`);
+      if(n) n.classList.add('expanded');
+    });
+    Object.entries(st.imgs||{}).forEach(([k,src])=>{
+      const z = document.querySelector(`.img-zone[data-img="${k}"]`);
+      if(z) setImg(z, src);
+    });
+    if(st.positions){
+      Object.entries(st.positions).forEach(([w, p])=>{
+        const n = document.querySelector(`.week-node[data-w="${w}"]`);
+        if(n){ n.style.left = p.x + 'px'; n.style.top = p.y + 'px'; }
+      });
+      drawConnections();
+    }
+    if(st.view){
+      state.x = st.view.x; state.y = st.view.y; state.scale = st.view.s;
+      apply();
+    }
+    updateProgress();
+  }catch(e){}
+}
+loadState();
+
+document.getElementById('resetAll').onclick = ()=>{
+  if(!confirm('Сбросить весь прогресс, картинки и положение?')) return;
+  localStorage.removeItem(KEY);
+  location.reload();
+};
+
+// сохраняем положение при пане/зуме (с дебаунсом)
+let saveT = null;
+function debouncedSave(){ clearTimeout(saveT); saveT = setTimeout(saveState, 300); }
+['mouseup','wheel','touchend'].forEach(ev=>viewport.addEventListener(ev, debouncedSave));
+
+// ресайз
+window.addEventListener('resize', ()=>{ /* ничего, transform не зависит от размера */ });
+</script>
+</body>
+</html>
